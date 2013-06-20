@@ -92,6 +92,17 @@ func connect(host, user, passwd string) (net.Conn, error) {
 			return nil, errors.New(f[1])
 		}
 	}
+
+	// Declare intent to be a jabber client.
+	fmt.Fprintf(c, "<?xml version='1.0'?>")
+
+	fmt.Fprintf(c,
+		"<stream:stream to='%s' xmlns='%s'"+
+		" xmlns:stream='%s' version='1.0'>\n",
+		xmlEscape(a[0]), nsClient, nsStream)
+
+	panic(0)
+
 	return c, nil
 }
 
@@ -99,15 +110,20 @@ func connect(host, user, passwd string) (net.Conn, error) {
 // If host is not specified, the  DNS SRV should be used to find the host from the domainpart of the JID.
 // Default the port to 5222.
 func NewClient(host, user, passwd string) (*Client, error) {
+	log.Printf("Attempting connection to %s",host)
 	c, err := connect(host, user, passwd)
 	if err != nil {
 		return nil, err
 	}
 
+	log.Print("Connection successful, attempting TLS handshake.")
+
 	tlsconn := tls.Client(c, &DefaultConfig)
 	if err = tlsconn.Handshake(); err != nil {
 		return nil, err
 	}
+
+	log.Print("TLS Successful, attempting verify.")
 
 	if strings.LastIndex(host, ":") > 0 {
 		host = host[:strings.LastIndex(host, ":")]
@@ -116,12 +132,16 @@ func NewClient(host, user, passwd string) (*Client, error) {
 		return nil, err
 	}
 
+	log.Print("Verify successful, attempting init.")
+
 	client := new(Client)
 	client.conn = tlsconn
 	if err := client.init(user, passwd); err != nil {
 		client.Close()
 		return nil, err
 	}
+
+	log.Print("Init Successful!")
 	return client, nil
 }
 
@@ -188,12 +208,6 @@ func (c *Client) init(user, passwd string) error {
 	}
 	user = a[0]
 	domain := a[1]
-
-	// Declare intent to be a jabber client.
-	fmt.Fprintf(c.conn, "<?xml version='1.0'?>\n"+
-		"<stream:stream to='%s' xmlns='%s'\n"+
-		" xmlns:stream='%s' version='1.0'>\n",
-		xmlEscape(domain), nsClient, nsStream)
 
 	// Server should respond with a stream opening.
 	se, err := nextStart(c.p)

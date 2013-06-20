@@ -67,9 +67,11 @@ func main() {
 		os.Exit(0)
 	}
 
-	talk, err := xmpp.NewClient("talk.google.com:443", username_, password_)
+	server := "grumpyjosh.com:5222"
+
+	talk, err := xmpp.NewClient(server, username_, password_)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Connection to %s failed: %s",server, err)
 	}
 
 	entry.Connect("activate", func() {
