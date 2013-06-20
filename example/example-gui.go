@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mattn/go-xmpp"
+	"github.com/Pursuit92/go-xmpp"
 	"github.com/mattn/go-gtk/gtk"
 	"log"
 	"os"

@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"flag"
-	"github.com/mattn/go-xmpp"
+	"github.com/Pursuit92/go-xmpp"
 	"log"
 	"os"
 	"strings"
